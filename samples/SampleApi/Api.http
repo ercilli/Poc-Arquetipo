@@ -1,0 +1,48 @@
+### Test - Operación Exitosa
+GET http://localhost:5041/api/success
+
+### Test - Generar Excepción
+GET http://localhost:5041/api/error
+
+### Test - Llamada a API Externa
+GET http://localhost:5041/api/external-call
+
+### Test - Log de Error Crítico
+POST http://localhost:5041/api/log-error
+Content-Type: application/json
+
+{
+  "errorType": "critical",
+  "message": "Error crítico en procesamiento de transacción",
+  "userId": "user123"
+}
+
+### Test - Log de Error Normal
+POST http://localhost:5041/api/log-error
+Content-Type: application/json
+
+{
+  "errorType": "error",
+  "message": "Error en validación de datos",
+  "userId": "user456"
+}
+
+### Test - Log de Warning
+POST http://localhost:5041/api/log-error
+Content-Type: application/json
+
+{
+  "errorType": "warning",
+  "message": "Token próximo a expirar",
+  "userId": "user789"
+}
+
+### Test - Log de Info
+POST http://localhost:5041/api/log-error
+Content-Type: application/json
+
+{
+  "errorType": "info",
+  "message": "Usuario logueado exitosamente",
+  "userId": "user101"
+}
