@@ -339,11 +339,14 @@ graph TB
         Correlation["🔗 Correlation & Tracing"]
     end
 
-    subgraph "Extension Libraries"
+    subgraph "Extension Libraries (Implementadas)"
         HttpLogging["🌐 bgba-arquetipo-http<br/>HTTP Interceptors"]
-        CanalLogging["📱 bgba-arquetipo-canales<br/>Channel-specific"]
-        DatabaseLogging["🗄️ bgba-arquetipo-database<br/>Database Operations"]
-        ExternalLogging["🌍 bgba-arquetipo-external<br/>External APIs"]
+        CanalLogging["📱 bgba-arquetipo-canales<br/>HTTP Enrichment"]
+    end
+
+    subgraph "Extension Libraries (Teóricas/Futuras)"
+        DatabaseLogging["🗄️ Database Extension<br/>❌ No implementado"]
+        ExternalLogging["🌍 External APIs<br/>❌ No implementado"]
     end
 
     subgraph "Application Layers"
@@ -360,14 +363,16 @@ graph TB
     ErrorHandling --> LoggingCore
     Correlation --> LoggingCore
 
-    %% Extension integrations
+    %% Extension integrations (solo las implementadas)
     HttpLogging --> PresentationLayer
-    CanalLogging --> PresentationLayer
-    DatabaseLogging --> DataLayer
-    ExternalLogging --> InfrastructureLayer
+    CanalLogging --> HttpLogging
 
     classDef coreClass fill:#e1f5fe,stroke:#01579b,stroke-width:3px
     classDef extensionClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef theoreticalClass fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,stroke-dasharray: 5 5
+
+    class HttpLogging,CanalLogging extensionClass
+    class DatabaseLogging,ExternalLogging theoreticalClass
     classDef layerClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
 
     class LoggingCore,Security,Performance,Audit,ErrorHandling,Correlation coreClass
@@ -560,12 +565,13 @@ graph LR
 - [x] Integración seguridad
 - [x] Enriquecimiento contexto avanzado
 
-#### 📋 **Extensiones Planificadas**
+#### 📋 **Extensiones Futuras (No Implementadas)**
 - [ ] Extensión logging database
-- [ ] Extensión message queue
+- [ ] Extensión message queue  
 - [ ] Logging operaciones cache
-- [ ] Extensiones específicas por canal
 - [ ] Logging APIs externas
+
+> **📌 Nota:** Las extensiones listadas arriba son ejemplos teóricos de posibles direcciones futuras. Actualmente solo están implementadas las extensiones HTTP y Canal.
 
 ## 🎯 Restricciones Arquitectónicas
 
@@ -613,33 +619,43 @@ public class LogEntry
 
 ### ✅ **LO QUE SÍ SE PUEDE HACER**
 
-#### **1. Extensión Correcta**
+#### **1. Extensión Correcta (Ejemplo con HTTP)**
 ```csharp
-// ✅ CORRECTO: Extensión por herencia
-public class DatabaseLogEntry : LogEntry 
+// ✅ CORRECTO: Extensión por herencia implementada
+public class HttpLogEntry : LogEntry 
 {
-    public string ConnectionString { get; set; }
-    public string Query { get; set; }
-    public long ExecutionTime { get; set; }
+    public string Method { get; set; }
+    public string Path { get; set; }
+    public int StatusCode { get; set; }
+    
+    // Propiedades enriquecibles
+    public string? CanalId { get; set; }
+    public string? CanalType { get; set; }
 }
 ```
 
-#### **2. Dependency Injection Apropiada**
+#### **2. Patrón de Enriquecimiento Implementado**
 ```csharp
-// ✅ CORRECTO: Registrar en DI container
+// ✅ CORRECTO: Enriquecimiento implementado
+public class CanalHttpLogEnricher : IHttpLogEnricher
+{
+    public void EnrichHttpLog(HttpLogEntry entry, HttpContext context)
+    {
+        if (context.Request.Headers.TryGetValue("X-Canal-Id", out var canalId))
+            entry.CanalId = canalId.ToString();
+    }
+}
+```
+
+#### **3. Dependency Injection Real**
+```csharp
+// ✅ CORRECTO: Registrar enriquecedores implementados
 public static class ServiceCollectionExtensions 
 {
-    public static IServiceCollection AddDatabaseLogging(
-        this IServiceCollection services, 
-        LoggingConfiguration config) 
+    public static IServiceCollection AddCanalEnrichment(
+        this IServiceCollection services) 
     {
-        services.AddSingleton<IDatabaseLogger>(provider => 
-        {
-            var logger = new DatabaseLogger();
-            logger.AddWriter(new ConsoleLogWriter(config.WriteIndented));
-            return logger;
-        });
-        
+        services.AddSingleton<IHttpLogEnricher, CanalHttpLogEnricher>();
         return services;
     }
 }

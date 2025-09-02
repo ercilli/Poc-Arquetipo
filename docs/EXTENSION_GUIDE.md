@@ -9,9 +9,19 @@ Esta guía te enseña cómo crear nuevas extensiones del sistema de logging sigu
 - Familiaridad con Dependency Injection
 - Entendimiento de la [Arquitectura del Sistema](ARCHITECTURE.md)
 
-## 🚀 Ejemplo Completo: Extensión para Database Logging
+## 🚀 Ejemplo Teórico: Cómo Crear una Extensión Database
 
-### **Paso 1: Crear el Proyecto**
+> **⚠️ NOTA IMPORTANTE**: Este es un ejemplo **teórico** de cómo se podría implementar una extensión de Database. 
+> 
+> **Estado Real del Proyecto:**
+> - ✅ **Logging.Core** - Sistema base (implementado)
+> - ✅ **bgba-arquetipo-http** - Logging HTTP (implementado)
+> - ✅ **bgba-arquetipo-canales** - Enriquecimiento Canal (implementado) 
+> - ❌ **bgba-arquetipo-database** - NO existe, solo ejemplo
+
+---
+
+### **Paso 1: Crear el Proyecto (Ejemplo Teórico)**
 
 ```bash
 # Navegar al directorio raíz
@@ -660,7 +670,6 @@ classDiagram
     }
 
     LoggingCore ..> ILogContext : uses
-    LoggingCore ..> DatabaseLogEntry : logs
     LoggingCore ..> CanalHttpLogEnricher : enriches HTTP
     
     classDef coreClass fill:#e1f5fe,stroke:#01579b,stroke-width:3px
@@ -670,7 +679,7 @@ classDiagram
     
     class LoggingCore coreClass
     class ILogContext interfaceClass
-    class HttpLogContext,DatabaseLogEntry extensionClass
+    class HttpLogContext extensionClass
     class CanalHttpLogEnricher enrichmentClass
 ```
 
@@ -679,7 +688,6 @@ classDiagram
 graph LR
     subgraph "Fuentes de Eventos"
         HttpRequest["🌐 HTTP Request (+ Canal Headers)"]
-        DatabaseOp["🗄️ Database Operation"]
         ExternalAPI["🌍 External API"]
     end
 
@@ -691,7 +699,6 @@ graph LR
 
     subgraph "Extension Layer"
         HttpExt["🌐 HTTP Extension (with Enrichment)"]
-        DatabaseExt["🗄️ Database Extension"]
     end
 
     subgraph "Output Layer"
@@ -701,30 +708,25 @@ graph LR
     end
 
     HttpRequest --> LoggingCore
-    DatabaseOp --> LoggingCore
     ExternalAPI --> LoggingCore
 
     LoggingCore --> ConfigManager
     LoggingCore --> FilterEngine
 
     FilterEngine --> HttpExt
-    FilterEngine --> DatabaseExt
 
     HttpExt --> Console
     HttpExt --> File
     HttpExt --> External
-
-    DatabaseExt --> Console
-    DatabaseExt --> File
 
     classDef sourceClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
     classDef coreClass fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
     classDef extensionClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
     classDef outputClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
 
-    class HttpRequest,DatabaseOp,ExternalAPI sourceClass
+    class HttpRequest,ExternalAPI sourceClass
     class LoggingCore,ConfigManager,FilterEngine coreClass
-    class HttpExt,DatabaseExt extensionClass
+    class HttpExt extensionClass
     class Console,File,External outputClass
 ```
 
