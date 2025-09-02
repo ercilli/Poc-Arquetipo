@@ -23,12 +23,12 @@ namespace BgbaArquetipoHttp.Middleware
         public async Task InvokeAsync(HttpContext context)
         {
             var stopwatch = Stopwatch.StartNew();
-            
+
             // Crear contexto base desde HttpContext con logger name del middleware
             var logContext = HttpLogContextBuilder.FromHttpContext(context)
                 .WithLoggerName(nameof(HttpLoggingMiddleware)); // Usar el nombre del middleware
 
-            // Log incoming request usando el nuevo patrón
+            // Log incoming request usando el nuevo patrón (enriquecimiento automático)
             _logger.Log(logContext.AsRequest());
 
             try
@@ -38,7 +38,7 @@ namespace BgbaArquetipoHttp.Middleware
 
                 stopwatch.Stop();
 
-                // Log successful response con tiempo de respuesta
+                // Log successful response con tiempo de respuesta (enriquecimiento automático)
                 _logger.Log(logContext
                     .AsResponse(context.Response.StatusCode)
                     .WithResponseTime(stopwatch.ElapsedMilliseconds));
@@ -47,7 +47,7 @@ namespace BgbaArquetipoHttp.Middleware
             {
                 stopwatch.Stop();
 
-                // Log error response con detalles del error
+                // Log error response con detalles del error (enriquecimiento automático)
                 _logger.Log(logContext
                     .AsResponse(500, $"Error: {ex.Message}")
                     .WithResponseTime(stopwatch.ElapsedMilliseconds)

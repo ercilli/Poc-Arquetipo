@@ -39,11 +39,15 @@ Extensión que agrega funcionalidad HTTP específica:
   - `span_id`: Identificador de span
   - `http_request_path`: Ruta de la request HTTP
   - `outgoing_request_path`: Ruta de requests salientes (opcional)
+  - Campos enriquecibles por extensiones:
+    - `canal_id`, `canal_type`, `session_id`: Información de canal
+    - `operation_type`, `remote_ip`, `user_agent`: Contexto de operación
 
 - **LogType**: Enum con tipos específicos para HTTP
 - **HttpLoggingMiddleware**: Middleware para interceptar requests/responses entrantes
 - **HttpLoggingHandler**: Handler para interceptar requests/responses salientes
 - **IHttpLogger**: Logger especializado para operaciones HTTP
+- **Sistema de Enriquecimiento**: Permite que extensiones agreguen campos adicionales sin modificar la estructura base
 
 ## 🚀 Quick Start
 
@@ -125,31 +129,24 @@ dotnet pack src/bgba-arquetipo-http/bgba-arquetipo-http.csproj
 
 ## 🔍 Ejemplo de Logs
 
-### Request HTTP entrante:
-```json
-#### Salida JSON con Control Total
-
+### Request HTTP entrante enriquecido:
 ```json
 {
   "logType": "REQUEST",
   "traceId": "abc-123-def-456",
   "spanId": "span-789",
   "httpRequestPath": "/api/users",
-  "loggerName": "HttpLoggingMiddleware",     // ✨ NUEVO: Clase que generó el log
+  "loggerName": "HttpLoggingMiddleware",
   "timestamp": "2025-08-28T15:30:00.123Z",
   "level": "Information", 
-  "message": "Incoming request: GET /api/users"
+  "message": "Incoming request: GET /api/users",
+  "canalId": "mobile-app",
+  "canalType": "mobile",
+  "sessionId": "abc123",
+  "operationType": "API_QUERY",
+  "remoteIp": "192.168.1.100",
+  "userAgent": "MobileApp/1.0"
 }
-```
-
-**🎯 Ventajas del nuevo sistema:**
-- ✅ **Sin ruido**: Logs de Microsoft/System suprimidos automáticamente
-- ✅ **Trazabilidad**: Cada log identifica su clase de origen (`loggerName`)
-- ✅ **Control granular**: Configura exactamente qué componentes loggear
-- ✅ **Detección automática**: El `loggerName` se detecta sin configuración manual
-
-### 📖 Documentación Detallada
-- **[Control Total de Logging](docs/logging-control-features.md)** - Guía completa de las nuevas funcionalidades de filtrado y control
 ```
 
 ### Request HTTP saliente:
@@ -166,14 +163,40 @@ dotnet pack src/bgba-arquetipo-http/bgba-arquetipo-http.csproj
 }
 ```
 
-## 🎯 Extensibilidad
+## 🎯 Extensibilidad y Enriquecimiento
 
-La arquitectura está diseñada para ser extensible. Por ejemplo, para crear una extensión `bgba-arquetipo-canales`:
+La arquitectura está diseñada para ser extensible a través de un sistema de enriquecimiento que permite agregar campos específicos sin modificar la estructura base.
 
-1. Extender `HttpLogEntry` con campos específicos para canales
-2. Crear nuevos `LogType` para operaciones de canales
-3. Implementar middleware/handlers específicos
-4. Configurar a través de extension methods
+### Sistema de Enriquecimiento
+```csharp
+// Ejemplo: Extensión de canal que enriquece logs HTTP
+public class CanalHttpLogEnricher : IHttpLogEnricher
+{
+    public void EnrichHttpLog(HttpLogEntry entry, HttpContext context)
+    {
+        // Los campos se agregan directamente al log, no en un objeto anidado
+        if (context.Request.Headers.TryGetValue("X-Canal-Id", out var canalId))
+            entry.CanalId = canalId.ToString();
+            
+        if (context.Request.Headers.TryGetValue("X-Canal-Type", out var canalType))
+            entry.CanalType = canalType.ToString();
+    }
+}
+
+// Configuración
+services.AddHttpLogging(config);
+services.AddCanalEnrichment(); // Registra el enriquecedor automáticamente
+```
+
+### Ejemplo de Extensión para Canales
+Para crear una extensión `bgba-arquetipo-canales`:
+
+1. **Implementar `IHttpLogEnricher`** para agregar campos específicos
+2. **Registrar el enriquecedor** a través de extension methods
+3. **Los campos aparecen directamente en el log** como propiedades de primer nivel
+4. **Sin logs duplicados** - un solo log HTTP enriquecido
+
+**Resultado**: Los logs HTTP automáticamente incluyen información de canal sin código adicional en controladores.
 
 ## 💰 Optimización para Infraestructura Bancaria
 

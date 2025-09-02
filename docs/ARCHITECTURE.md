@@ -198,56 +198,57 @@ classDiagram
     HttpLoggingHandler --> IHttpLogger
 ```
 
-### Canal Extension
+### Canal Enrichment Pattern
 ```mermaid
 classDiagram
-    %% CANAL EXTENSION
-    class CanalLogger {
-        +Log(CanalLogContext context)
+    %% ENRICHMENT PATTERN
+    class IHttpLogEnricher {
+        <<interface>>
+        +int Priority
+        +EnrichHttpLog(HttpLogEntry entry, HttpContext context)
     }
     
-    class CanalLogEntry {
-        +string CanalId
-        +string IdIdentidad
-        +CanalOperationType OperationType
-        +Dictionary~string,string~ Headers
+    class CanalHttpLogEnricher {
+        +int Priority
+        +EnrichHttpLog(HttpLogEntry entry, HttpContext context)
+        -ExtractCanalId(HttpContext context)
+        -ExtractCanalType(HttpContext context)
+        -DetermineOperationType(string path)
     }
     
-    class CanalLogContext {
-        +string CanalId
-        +string IdIdentidad
-        +CanalOperationType OperationType
-        +Dictionary~string,string~ Headers
+    class HttpLogEntry {
+        %% HTTP Base Properties
+        +string Method
+        +string Path
+        +int StatusCode
+        +long Duration
+        
+        %% Enrichable Canal Properties
+        +string? CanalId
+        +string? CanalType
+        +string? SessionId
+        +string? OperationType
+        +string? RemoteIp
+        +string? UserAgent
     }
     
-    class CanalLogContextBuilder {
-        +FromHttpContext(HttpContext context)
-        +WithCanalId(string id)
-        +WithIdIdentidad(string id)
-        +WithOperationType(CanalOperationType type)
-        +Build()
+    class HttpLoggerWithEnrichment {
+        -IEnumerable~IHttpLogEnricher~ _enrichers
+        +Log(HttpLogEntry entry, HttpContext context)
+        -ApplyEnrichments(HttpLogEntry entry, HttpContext context)
     }
     
-    class CanalLoggingMiddleware {
-        -RequestDelegate _next
-        -CanalLogger _logger
-        +InvokeAsync(HttpContext context)
-    }
-    
-    class CanalOperationType {
-        <<enumeration>>
-        Authentication
-        Transaction
-        ErrorHandling
-        DataQuery
+    class ServiceCollectionExtensions {
+        <<static>>
+        +AddCanalEnrichment(IServiceCollection services)
     }
     
     %% RELATIONSHIPS
-    CanalLogger --|> Logger
-    CanalLogEntry --|> LogEntry
-    CanalLogContext --> CanalLogEntry
-    CanalLogContextBuilder --> CanalLogContext
-    CanalLoggingMiddleware --> CanalLogger
+    CanalHttpLogEnricher ..|> IHttpLogEnricher
+    HttpLoggerWithEnrichment --> IHttpLogEnricher
+    HttpLoggerWithEnrichment --> HttpLogEntry
+    CanalHttpLogEnricher --> HttpLogEntry
+    ServiceCollectionExtensions --> CanalHttpLogEnricher
 ```
 
 ## 🧩 Diagrama de Componentes
@@ -260,17 +261,17 @@ graph LR
         MID[Middleware Pipeline]
     end
     
-    subgraph "🔌 HTTP EXTENSION"
-        HTTP_LOG[HttpLogger]
+    subgraph "🔌 HTTP EXTENSION (with Enrichment)"
+        HTTP_LOG[HttpLoggerWithEnrichment]
         HTTP_MID[HttpLoggingMiddleware]
         HTTP_HAND[HttpLoggingHandler]
         HTTP_CTX[HttpLogContext]
+        HTTP_ENRICHER[IHttpLogEnricher]
     end
     
-    subgraph "🏛️ CANAL EXTENSION"
-        CANAL_LOG[CanalLogger]
-        CANAL_MID[CanalLoggingMiddleware]
-        CANAL_CTX[CanalLogContext]
+    subgraph "🏛️ CANAL ENRICHMENT"
+        CANAL_ENRICHER[CanalHttpLogEnricher]
+        CANAL_EXTENSIONS[ServiceCollectionExtensions]
     end
     
     subgraph "⚡ LOGGING CORE"

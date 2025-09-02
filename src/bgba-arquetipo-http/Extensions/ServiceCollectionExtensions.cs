@@ -25,10 +25,28 @@ namespace BgbaArquetipoHttp.Extensions
             // Create filter based on configuration
             var logFilter = new DefaultLogFilter(config);
 
-            var logger = new HttpLogger();
-            logger.AddWriter(new ConsoleLogWriter(config.WriteIndented, logFilter, config));
+            // Create enriched logger if enrichers are available
+            services.AddSingleton<IHttpLogger>(provider =>
+            {
+                var enrichers = provider.GetServices<IHttpLogEnricher>();
+                var httpContextAccessor = provider.GetService<IHttpContextAccessor>();
 
-            services.AddSingleton<IHttpLogger>(logger);
+                if (enrichers.Any() && httpContextAccessor != null)
+                {
+                    return new HttpLoggerWithEnrichment(
+                        new ConsoleLogWriter(config.WriteIndented, logFilter, config),
+                        config,
+                        enrichers,
+                        httpContextAccessor);
+                }
+                else
+                {
+                    var logger = new HttpLogger();
+                    logger.AddWriter(new ConsoleLogWriter(config.WriteIndented, logFilter, config));
+                    return logger;
+                }
+            });
+
             services.AddSingleton(config);
             services.AddSingleton<ILogFilter>(logFilter);
 

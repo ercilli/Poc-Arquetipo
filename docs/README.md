@@ -6,79 +6,86 @@ Esta carpeta contiene la documentación técnica completa del proyecto de loggin
 
 ### 🏗️ Arquitectura y Diseño
 
-1. **[Cross-Cutting Concerns & Architecture Overview](logging-architecture-diagram.md)**
-   - Diagramas de cross-cutting concerns
-   - Arquitecturas de deployment (monolítico, microservicios, serverless)
-   - Flujos de correlación y trazado distribuido
-   - Estrategias de configuración
+1. **[Guía Detallada de Componentes](COMPONENT_GUIDE.md)** ⭐ **NUEVO**
+   - Explicación detallada de cada componente del sistema
+   - Responsabilidades específicas y propósito de existencia
+   - Relaciones entre componentes y flujo de extensión
+   - Filosofía de diseño y principios arquitectónicos
 
-2. **[Extension Patterns & Scalability](extension-patterns.md)**
-   - Patrones de extensibilidad
-   - Arquitectura multi-tenant
-   - Arquitectura event-driven
-   - Sistema de plugins
-   - Arquitectura específica por canal
+2. **[Arquitectura del Sistema](ARCHITECTURE.md)**
+   - Diagramas UML completos (clases, componentes, flujos)
+   - Cross-cutting concerns y funcionalidades de control
+   - Casos de uso empresariales y stack tecnológico
+   - Restricciones y principios arquitectónicos
 
-3. **[Use Cases & Implementation Examples](use-cases-implementation.md)**
-   - Casos de uso por industria (banca, salud, e-commerce)
-   - Roadmap de implementación
-   - Integración con stack tecnológico
-   - Ejemplos del mundo real
-   - Kit de desarrollo de extensiones (EDK)
+3. **[Guía de Extensión](EXTENSION_GUIDE.md)**
+   - Tutorial paso a paso para crear extensiones
+   - Ejemplo completo de Database Logging
+   - Patrones arquitectónicos con diagramas
+   - Ejemplos reales (bgba-arquetipo-canales)
 
-## 🎯 Guías por Escenario
+### 🎯 Optimización y Configuración
 
-### Para Arquitectos de Software
-- Revisa [logging-architecture-diagram.md](logging-architecture-diagram.md) para entender los cross-cutting concerns
-- Consulta [extension-patterns.md](extension-patterns.md) para patrones de escalabilidad
-- Examina [use-cases-implementation.md](use-cases-implementation.md) para el roadmap técnico
+4. **[Optimizaciones Bancarias](log-optimization-banking.md)**
+   - Configuraciones específicas por ambiente
+   - Métricas de impacto y ROI calculado
+   - Implementación técnica y ejemplos de código
+   - Comparativas de performance y almacenamiento
 
-### Para Desarrolladores
-- Inicia con el [README principal](../README.md) para configuración básica
-- Revisa [extension-patterns.md](extension-patterns.md) para entender cómo crear extensiones
-- Utiliza [use-cases-implementation.md](use-cases-implementation.md) para ejemplos específicos
+5. **[Casos de Uso e Implementación](use-cases-implementation.md)**
+   - Implementación en sistemas bancarios y e-commerce
+   - Roadmap de desarrollo y adoption strategy
+   - Métricas de adopción y tecnologías soportadas
+   - Diagramas de flujo empresariales
 
-### Para DevOps y Operaciones
-- Consulta [logging-architecture-diagram.md](logging-architecture-diagram.md) para arquitecturas de deployment
-- Revisa [use-cases-implementation.md](use-cases-implementation.md) para integración con herramientas de monitoreo
+## 🎯 Guías por Perfil
 
-### Para Product Owners
-- Examina [use-cases-implementation.md](use-cases-implementation.md) para entender el valor de negocio
-- Consulta el roadmap de desarrollo en la misma guía
+### 👨‍💻 Para Desarrolladores
+1. **Inicia aquí**: [Guía de Componentes](COMPONENT_GUIDE.md) - Entiende cada pieza
+2. **Crea extensiones**: [Guía de Extensión](EXTENSION_GUIDE.md) - Tutorial completo
+3. **Optimiza para producción**: [Optimizaciones Bancarias](log-optimization-banking.md)
 
-## 🔧 Diagramas Incluidos
+### 🏗️ Para Arquitectos de Software
+1. **Arquitectura completa**: [Arquitectura del Sistema](ARCHITECTURE.md)
+2. **Componentes detallados**: [Guía de Componentes](COMPONENT_GUIDE.md)
+3. **Casos empresariales**: [Casos de Uso](use-cases-implementation.md)
 
-### Diagramas de Arquitectura
-- Cross-cutting concerns layer
-- Extension points architecture  
-- Deployment scenarios
-- Context correlation flows
-- Configuration management
+### 🚀 Para DevOps y Operaciones
+1. **Configuraciones**: [Optimizaciones Bancarias](log-optimization-banking.md)
+2. **Deployment**: [Arquitectura del Sistema](ARCHITECTURE.md)
+3. **Monitoreo**: [Casos de Uso](use-cases-implementation.md)
 
-### Diagramas de Patrones
-- Extension pattern implementation
-- Multi-tenant architecture
-- Event-driven architecture
-- Plugin system architecture
-- Channel-specific patterns
+### 💼 Para Product Owners
+1. **Valor de negocio**: [Casos de Uso](use-cases-implementation.md)
+2. **ROI y métricas**: [Optimizaciones Bancarias](log-optimization-banking.md)
+3. **Roadmap**: [Casos de Uso](use-cases-implementation.md)
 
-### Diagramas de Implementación
-- Enterprise scenarios matrix
-- Development roadmap
-- Technology stack integration
-- Real-world examples
-- Extension development kit
+## 🔍 Navegación Rápida
+
+| ¿Qué necesitas? | Ve a |
+|-----------------|------|
+| Entender qué hace cada clase | [Guía de Componentes](COMPONENT_GUIDE.md) |
+| Crear una nueva extensión | [Guía de Extensión](EXTENSION_GUIDE.md) |
+| Ver diagramas UML completos | [Arquitectura del Sistema](ARCHITECTURE.md) |
+| Optimizar para producción | [Optimizaciones Bancarias](log-optimization-banking.md) |
+| Implementar en empresa | [Casos de Uso](use-cases-implementation.md) |
+
+## 📊 Diagramas Incluidos
+
+- **🧩 Diagramas de Componentes**: Relaciones y dependencias
+- **🏗️ Diagramas UML**: Clases, secuencias y componentes
+- **🔄 Flujos de Extensión**: Cómo se relacionan las extensiones
+- **🏢 Casos Empresariales**: Implementaciones bancarias y e-commerce
+- **📈 Métricas de Performance**: Optimizaciones y ROI
 
 ## 🚀 Próximos Pasos
 
-1. **Si eres nuevo en el proyecto**: Comienza con el [README principal](../README.md)
-2. **Para implementar extensiones**: Consulta [extension-patterns.md](extension-patterns.md)
-3. **Para deployment enterprise**: Revisa [logging-architecture-diagram.md](logging-architecture-diagram.md)
-4. **Para casos específicos**: Examina [use-cases-implementation.md](use-cases-implementation.md)
-
-## 📞 Soporte
-
-Para preguntas sobre la arquitectura o implementación, consulta primero esta documentación. Los diagramas están en formato Mermaid y se pueden visualizar directamente en GitHub o en editores compatibles con Markdown.
+1. **🆕 Si eres nuevo**: [Guía de Componentes](COMPONENT_GUIDE.md)
+2. **🔧 Para extender**: [Guía de Extensión](EXTENSION_GUIDE.md)
+3. **🏗️ Para arquitectura**: [Arquitectura del Sistema](ARCHITECTURE.md)
+4. **⚡ Para optimizar**: [Optimizaciones Bancarias](log-optimization-banking.md)
+5. **🏢 Para implementar**: [Casos de Uso](use-cases-implementation.md)
 
 ---
-*Documentación actualizada: Agosto 2025*
+*📅 Documentación actualizada: 1 de septiembre de 2025*  
+*✨ Incluye nueva guía detallada de componentes*

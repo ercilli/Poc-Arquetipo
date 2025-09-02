@@ -9,17 +9,17 @@ namespace BgbaArquetipoHttp
     {
         // Nuevo método principal que usa contexto
         void Log(HttpLogContext context);
-        
+
         // Métodos de conveniencia para mantener compatibilidad (marcados como obsoletos)
         [Obsolete("Use Log(HttpLogContext) instead. This method will be removed in future versions.")]
         void LogRequest(string traceId, string spanId, string httpRequestPath, string message = "HTTP Request");
-        
+
         [Obsolete("Use Log(HttpLogContext) instead. This method will be removed in future versions.")]
         void LogResponse(string traceId, string spanId, string httpRequestPath, string message = "HTTP Response");
-        
+
         [Obsolete("Use Log(HttpLogContext) instead. This method will be removed in future versions.")]
         void LogOutgoingRequest(string traceId, string spanId, string httpRequestPath, string outgoingRequestPath, string message = "Outgoing HTTP Request");
-        
+
         [Obsolete("Use Log(HttpLogContext) instead. This method will be removed in future versions.")]
         void LogOutgoingResponse(string traceId, string spanId, string httpRequestPath, string outgoingRequestPath, string message = "Outgoing HTTP Response");
     }
@@ -32,7 +32,7 @@ namespace BgbaArquetipoHttp
         /// <summary>
         /// Método principal para logging HTTP usando contexto
         /// </summary>
-        public void Log(HttpLogContext context)
+        public virtual void Log(HttpLogContext context)
         {
             var logEntry = context.ToLogEntry();
             Log(logEntry);

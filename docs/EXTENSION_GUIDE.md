@@ -654,33 +654,32 @@ classDiagram
         +GetLoggerName() string
     }
 
-    class CanalLogEntry {
-        +CanalOperationType Operation
-        +string IdIdentidad
-        +string CanalId
-        +GetLoggerName() string
+    class CanalHttpLogEnricher {
+        +int Priority
+        +EnrichHttpLog(entry, context) void
     }
 
     LoggingCore ..> ILogContext : uses
     LoggingCore ..> DatabaseLogEntry : logs
-    LoggingCore ..> CanalLogEntry : logs
+    LoggingCore ..> CanalHttpLogEnricher : enriches HTTP
     
     classDef coreClass fill:#e1f5fe,stroke:#01579b,stroke-width:3px
     classDef interfaceClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef extensionClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef enrichmentClass fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
     
     class LoggingCore coreClass
     class ILogContext interfaceClass
-    class HttpLogContext,DatabaseLogEntry,CanalLogEntry extensionClass
+    class HttpLogContext,DatabaseLogEntry extensionClass
+    class CanalHttpLogEnricher enrichmentClass
 ```
 
 ### **Pipeline de Procesamiento**
 ```mermaid
 graph LR
     subgraph "Fuentes de Eventos"
-        HttpRequest["🌐 HTTP Request"]
+        HttpRequest["🌐 HTTP Request (+ Canal Headers)"]
         DatabaseOp["🗄️ Database Operation"]
-        CanalOp["📱 Canal Operation"]
         ExternalAPI["🌍 External API"]
     end
 
@@ -691,9 +690,8 @@ graph LR
     end
 
     subgraph "Extension Layer"
-        HttpExt["🌐 HTTP Extension"]
+        HttpExt["🌐 HTTP Extension (with Enrichment)"]
         DatabaseExt["🗄️ Database Extension"]
-        CanalExt["📱 Canal Extension"]
     end
 
     subgraph "Output Layer"
@@ -704,7 +702,6 @@ graph LR
 
     HttpRequest --> LoggingCore
     DatabaseOp --> LoggingCore
-    CanalOp --> LoggingCore
     ExternalAPI --> LoggingCore
 
     LoggingCore --> ConfigManager
@@ -712,7 +709,6 @@ graph LR
 
     FilterEngine --> HttpExt
     FilterEngine --> DatabaseExt
-    FilterEngine --> CanalExt
 
     HttpExt --> Console
     HttpExt --> File
@@ -721,17 +717,14 @@ graph LR
     DatabaseExt --> Console
     DatabaseExt --> File
 
-    CanalExt --> Console
-    CanalExt --> External
-
     classDef sourceClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
     classDef coreClass fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
     classDef extensionClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
     classDef outputClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
 
-    class HttpRequest,DatabaseOp,CanalOp,ExternalAPI sourceClass
+    class HttpRequest,DatabaseOp,ExternalAPI sourceClass
     class LoggingCore,ConfigManager,FilterEngine coreClass
-    class HttpExt,DatabaseExt,CanalExt extensionClass
+    class HttpExt,DatabaseExt extensionClass
     class Console,File,External outputClass
 ```
 
@@ -765,63 +758,68 @@ public class LoggingExtensionConfiguration
 }
 ```
 
-## 🏆 Ejemplo Real: bgba-arquetipo-canales
+## 🏆 Ejemplo Real: bgba-arquetipo-canales (Patrón de Enriquecimiento)
 
 ### **Casos de Uso Implementados**
-La extensión de canales demuestra los patrones en acción:
+La extensión de canales demuestra el **patrón de enriquecimiento** en acción:
 
-- ✅ **Headers Automáticos**: Captura `id_identidad`, `canal_id` desde requests
-- ✅ **Operaciones Específicas**: `CanalOperationType` para diferentes acciones
-- ✅ **Middleware Transparente**: Enriquecimiento automático de logs
-- ✅ **Correlación**: Tracking entre microservicios
+- ✅ **Enriquecimiento HTTP**: Canal enriquece logs HTTP existentes (no logs separados)
+- ✅ **Headers Automáticos**: Captura `X-Canal-Id`, `X-Canal-Type` desde headers
+- ✅ **Campos Directos**: Propiedades tipadas en lugar de diccionarios
+- ✅ **Un Solo Log**: HTTP + Canal = log unificado completo
 
-### **Headers Capturados**
-| Header | Descripción | Ejemplo |
-|--------|-------------|---------|
-| `id_identidad` | ID único del usuario | `user123` |
-| `canal_id` | Canal de origen | `mobile` |
-| `x-correlation-id` | ID de correlación | `auth-001` |
+### **Headers Capturados para Enriquecimiento**
+| Header | Propiedad Enriquecida | Ejemplo |
+|--------|----------------------|---------|
+| `X-Canal-Id` | `canalId` | `mobile-app` |
+| `X-Canal-Type` | `canalType` | `mobile` |
+| `X-Session-Id` | `sessionId` | `sess_abc123` |
 
-### **Output Real de Canales**
+### **Output Real: HTTP Enriquecido con Canal**
 ```json
 {
   "timestamp": "2025-08-28T10:30:00.000Z",
-  "level": "Information",
-  "message": "User authentication attempt started",
-  "logger_name": "CanalController",
-  "id_identidad": "user123",
-  "canal_id": "mobile",
-  "operation_type": "Authentication",
-  "correlation_id": "auth-001"
+  "level": "Information", 
+  "method": "POST",
+  "path": "/api/authenticate",
+  "statusCode": 200,
+  "duration": 145,
+  "requestSize": 234,
+  "responseSize": 89,
+  "canalId": "mobile-app",
+  "canalType": "mobile", 
+  "sessionId": "sess_abc123",
+  "operationType": "Authentication",
+  "remoteIp": "192.168.1.100",
+  "userAgent": "MyBankApp/1.2.0"
 }
 ```
 
-### **Uso en Controladores**
+**📌 Diferencia Clave:**
+- **Antes**: 2 logs separados (HTTP + Canal)
+- **Ahora**: 1 log HTTP enriquecido con información de canal
+
+### **Uso en Controladores (Sin Cambios)**
 ```csharp
 [ApiController]
 public class CanalController : ControllerBase
 {
-    private readonly CanalLogger _canalLogger;
-
-    public CanalController(CanalLogger canalLogger)
-    {
-        _canalLogger = canalLogger;
-    }
-
+    // No necesita CanalLogger - el enriquecimiento es automático
+    
     [HttpGet("authenticate")]
     public IActionResult Authenticate()
     {
-        _canalLogger.Log(new CanalLogContextBuilder()
-            .FromHttpContext(HttpContext)
-            .WithAutoLoggerName()
-            .WithMessage("Authentication attempt")
-            .WithOperationType(CanalOperationType.Authentication)
-            .Build());
-            
+        // El middleware HTTP + enriquecedor de canal 
+        // automáticamente genera el log completo
         return Ok();
     }
 }
 ```
+
+**📌 Beneficios del Patrón:**
+- **Menos código**: Los controladores no necesitan logging manual
+- **Un solo log**: Toda la información en un lugar
+- **Automatización**: Enriquecimiento transparente sin intervención
 
 ## 📈 Próximos Pasos
 

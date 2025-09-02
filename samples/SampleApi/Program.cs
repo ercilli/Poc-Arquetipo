@@ -37,8 +37,8 @@ var loggingConfig = new LoggingConfiguration
 // Configuración simple: El desarrollador usa _logger.LogInformation() y obtiene contexto automático
 builder.Services.AddHttpLogging(loggingConfig);
 
-// Add canal logging services (opcional para casos específicos)
-builder.Services.AddCanalLogging(loggingConfig);
+// Add canal enrichment to HTTP logs instead of separate canal logs
+builder.Services.AddCanalEnrichment();
 
 // 🔧 IMPORTANTE: Configurar HttpClient con nuestro interceptor de logging
 builder.Services.AddHttpClient("LoggedHttpClient")
@@ -64,10 +64,23 @@ app.UseHttpsRedirection();
 // Add HTTP logging middleware
 app.UseBgbaHttpLogging();
 
-// Add canal logging middleware
-app.UseCanalLogging();
+// Add canal logging middleware - COMENTADO para usar solo como enriquecimiento
+// app.UseCanalLogging();
 
 // Map controllers
 app.MapControllers();
+
+// Agregar logging para mostrar el puerto en el que se levanta la aplicación
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    var addresses = app.Services.GetService<Microsoft.AspNetCore.Hosting.Server.IServer>()?.Features?.Get<Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature>()?.Addresses;
+    if (addresses != null)
+    {
+        foreach (var address in addresses)
+        {
+            Console.WriteLine($"🚀 Aplicación iniciada en: {address}");
+        }
+    }
+});
 
 app.Run();
