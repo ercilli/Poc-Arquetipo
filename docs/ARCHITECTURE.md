@@ -363,9 +363,13 @@ graph TB
     ErrorHandling --> LoggingCore
     Correlation --> LoggingCore
 
-    %% Extension integrations (solo las implementadas)
-    HttpLogging --> PresentationLayer
+    %% Extension integrations (corrigiendo dependencias reales)
+    HttpLogging --> LoggingCore
+    CanalLogging --> LoggingCore
     CanalLogging --> HttpLogging
+    
+    %% Application layer connections
+    HttpLogging --> PresentationLayer
 
     classDef coreClass fill:#e1f5fe,stroke:#01579b,stroke-width:3px
     classDef extensionClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
