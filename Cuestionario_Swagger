@@ -1,0 +1,69 @@
+
+# Análisis de Componente: Swagger / OpenAPI UI
+
+## 1. Información General
+- **Arquitectura principal:** HTTP / BFF
+- **Responsables del análisis:** TO + Devs por stack
+- **Descripción breve:** Generación del esquema OpenAPI y exposición de UI interactiva para documentar y probar APIs.
+
+---
+
+## 2. Clasificación Core / Arquetipo / Extensión
+1. ¿Lo necesitan **todas las apps** sin importar arquitectura? → No (Batch/MQ no lo usan)
+2. ¿Define la **forma** de la aplicación (HTTP, Batch, MQ)? → Sí
+3. ¿Depende de **políticas/negocio** o varía por squad? → Sí (visibilidad, auth, ambientes)
+4. ¿Debe poder cambiarse **sin redeploy** vía BO? → Sí (on/off, auth requerida, scopes)
+5. ¿Contrato debe ser **estable en 4 tecnologías**? → Sí (endpoints de spec y UI)
+
+**Decisión propuesta:** Arquetipo (HTTP/BFF) + configurable vía BO  
+**Riesgo si cambia:** Medio (riesgo de exposición indebida en producción)  
+**Mitigación:** BO controla exposición, linters de OpenAPI en CI/CD, contratos estandarizados.
+
+---
+
+## 3. Requerimientos Funcionales
+- Generar esquema OpenAPI 3.x de endpoints.  
+- Exponer UI (SwaggerUI/Redoc) en ruta estándar.  
+- Integrar esquemas de seguridad (JWT/OAuth2).  
+
+## 4. Requerimientos No Funcionales (NFR)
+- Seguridad: UI off en producción o detrás de auth/SSO.  
+- Compatibilidad: rutas estándar en 4 stacks (`/swagger`, `/docs`, `/openapi.json`).  
+- Performance: overhead de generación de spec aceptable.  
+- Auditoría: ocultar o redactar PII en ejemplos.  
+
+---
+
+## 5. Dependencias e Integraciones
+- Librerías OpenAPI/Swagger por stack.  
+- Backoffice (flags para habilitar/deshabilitar UI, auth, scopes).  
+
+---
+
+## 6. Entregables por Stack
+| Tecnología | Entregable | Notas |
+|------------|------------|-------|
+| .NET       | Swashbuckle.AspNetCore | Config predefinida en arquetipo HTTP |
+| Java       | springdoc-openapi | Incluido en arquetipo Spring Boot |
+| Node.js    | @nestjs/swagger | Generación automática de spec |
+| Python     | FastAPI built-in docs | Rutas `/docs` y `/redoc` controladas por BO |
+
+---
+
+## 7. Configuración BO (si aplica)
+- **Flags disponibles:**  
+  - `docs.enabled` (on/off)  
+  - `docs.auth.required` (true/false)  
+  - `docs.allowedEnvs` (DEV, QA, PROD)  
+
+- **Valores por ambiente:**  
+  - DEV: enabled = true, auth.required = false  
+  - QA: enabled = true, auth.required = true  
+  - PROD: enabled = false (solo spec JSON accesible vía auth)  
+
+---
+
+## 8. Notas / Dudas / ADRs
+- ¿Deberíamos permitir UI en PROD detrás de VPN/SSO para soporte?  
+- ¿Usar Redoc además de Swagger UI para mejor visualización?  
+- ADR pendiente: decidir exposición de `/docs` en producción.
